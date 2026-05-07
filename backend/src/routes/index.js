@@ -1,0 +1,23 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { otpLogin } from '../controllers/authController.js';
+import { createBike, deleteBike, getBike, listBikes, updateBike } from '../controllers/bikeController.js';
+import { createBooking, listBookings, myBookings, updateBookingStatus } from '../controllers/bookingController.js';
+import { createOrder, verifyPayment } from '../controllers/paymentController.js';
+import { listUsers, me } from '../controllers/userController.js';
+import { allowRoles, auth } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+
+const r = Router();
+r.post('/auth/otp-login', validate(z.object({ idToken: z.string(), name: z.string().optional() })), otpLogin);
+r.get('/bikes', listBikes); r.get('/bikes/:id', getBike);
+r.post('/bikes', auth, allowRoles('admin'), validate(z.object({ name: z.string(), brand: z.string(), model: z.string().optional(), pricePerHour: z.number(), pricePerDay: z.number(), images: z.array(z.string()).default([]), specs: z.object({ engine: z.string().optional(), mileage: z.string().optional(), fuelType: z.string().optional(), transmission: z.string().optional() }).default({}), isAvailable: z.boolean().default(true), totalStock: z.number().default(1) })), createBike);
+r.put('/bikes/:id', auth, allowRoles('admin'), validate(z.object({ name: z.string(), brand: z.string(), model: z.string().optional(), pricePerHour: z.number(), pricePerDay: z.number(), images: z.array(z.string()).default([]), specs: z.any().optional(), isAvailable: z.boolean(), totalStock: z.number() })), updateBike);
+r.delete('/bikes/:id', auth, allowRoles('admin'), deleteBike);
+r.post('/bookings', auth, validate(z.object({ bike: z.string(), pickupDate: z.coerce.date(), returnDate: z.coerce.date(), durationHours: z.number().positive() })), createBooking);
+r.get('/bookings/me', auth, myBookings); r.get('/admin/bookings', auth, allowRoles('admin'), listBookings);
+r.patch('/admin/bookings/:id/status', auth, allowRoles('admin'), validate(z.object({ status: z.enum(['approved', 'rejected', 'active', 'completed']) })), updateBookingStatus);
+r.post('/payments/order', auth, validate(z.object({ bookingId: z.string() })), createOrder);
+r.post('/payments/verify', auth, validate(z.object({ razorpay_order_id: z.string(), razorpay_payment_id: z.string(), razorpay_signature: z.string() })), verifyPayment);
+r.get('/users/me', auth, me); r.get('/admin/users', auth, allowRoles('admin'), listUsers);
+export default r;

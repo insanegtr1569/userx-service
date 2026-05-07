@@ -1,0 +1,5 @@
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';import { useState } from 'react';import { auth } from '../firebase';import { api } from '../api/client';import { useAuth } from '../context/AuthContext';
+export default function Login(){const [mobile,setMobile]=useState('+91');const [otp,setOtp]=useState('');const [confirm,setConfirm]=useState(null);const {setUser}=useAuth();
+const send=async()=>{window.recaptchaVerifier=new RecaptchaVerifier(auth,'recaptcha',{});setConfirm(await signInWithPhoneNumber(auth,mobile,window.recaptchaVerifier));};
+const verify=async()=>{const r=await confirm.confirm(otp);const idToken=await r.user.getIdToken();const res=await api.post('/auth/otp-login',{idToken});localStorage.setItem('token',res.data.token);setUser(res.data.user);};
+return <div className='p-4 card m-4'><input value={mobile} onChange={e=>setMobile(e.target.value)}/><button onClick={send}>Send OTP</button><input value={otp} onChange={e=>setOtp(e.target.value)}/><button onClick={verify}>Verify</button><div id='recaptcha'></div></div>}

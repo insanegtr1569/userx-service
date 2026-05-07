@@ -1,0 +1,3 @@
+import { useEffect, useState } from 'react';import { Link } from 'react-router-dom';import { api } from '../api/client';
+export default function Home(){const [bikes,setBikes]=useState([]);const [q,setQ]=useState(''); useEffect(()=>{api.get('/bikes',{params:{q}}).then(r=>setBikes(r.data));},[q]);
+return <div className='p-4'><input className='card w-full mb-4' placeholder='Search bikes' onChange={e=>setQ(e.target.value)}/><div className='grid md:grid-cols-3 gap-4'>{bikes.map(b=><Link key={b._id} to={`/bikes/${b._id}`} className='card'><img src={b.images?.[0]} className='h-44 w-full object-cover rounded'/><h3>{b.brand} {b.name}</h3><p>₹{b.pricePerHour}/hr · ₹{b.pricePerDay}/day</p></Link>)}</div></div>}

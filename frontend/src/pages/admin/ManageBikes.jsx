@@ -1,0 +1,5 @@
+import { useEffect,useState } from 'react';import { api } from '../../api/client';
+const init={name:'',brand:'',pricePerHour:0,pricePerDay:0,images:[]};
+export default function ManageBikes(){const [bikes,setBikes]=useState([]);const [form,setForm]=useState(init);const load=()=>api.get('/bikes').then(r=>setBikes(r.data));useEffect(load,[]);
+const add=async()=>{await api.post('/bikes',form);setForm(init);load();};const del=async(id)=>{await api.delete(`/bikes/${id}`);load();};
+return <div className='p-4'><div className='card'><input placeholder='name' value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/><input placeholder='brand' value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/><input type='number' placeholder='hour' onChange={e=>setForm({...form,pricePerHour:Number(e.target.value)})}/><input type='number' placeholder='day' onChange={e=>setForm({...form,pricePerDay:Number(e.target.value)})}/><button onClick={add}>Add Bike</button></div>{bikes.map(b=><div key={b._id} className='card my-2 flex justify-between'>{b.name}<button onClick={()=>del(b._id)}>Delete</button></div>)}</div>}
