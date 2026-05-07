@@ -1,0 +1,5 @@
+import { useEffect,useState } from 'react';import { useParams } from 'react-router-dom';import { api } from '../api/client';import { useAuth } from '../context/AuthContext';
+export default function BikeDetail(){const {id}=useParams();const [bike,setBike]=useState();const [form,setForm]=useState({pickupDate:'',returnDate:'',durationHours:24});const {user}=useAuth();
+useEffect(()=>{api.get(`/bikes/${id}`).then(r=>setBike(r.data));},[id]);
+const book=async()=>{const b=await api.post('/bookings',{...form,bike:id}); alert(`Booking confirmed: ${b.data._id}`)};
+if(!bike) return null; return <div className='p-4 card m-4'><img src={bike.images?.[0]} className='h-64 w-full object-cover rounded'/><h1>{bike.brand} {bike.name}</h1><p>{bike.specs?.engine}</p><input type='datetime-local' onChange={e=>setForm({...form,pickupDate:e.target.value})}/><input type='datetime-local' onChange={e=>setForm({...form,returnDate:e.target.value})}/><input type='number' value={form.durationHours} onChange={e=>setForm({...form,durationHours:Number(e.target.value)})}/>{user&&<button onClick={book} className='card'>Book Now</button>}</div>}
